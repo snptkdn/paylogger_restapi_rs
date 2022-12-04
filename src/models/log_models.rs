@@ -1,6 +1,7 @@
 use chrono::NaiveDate;
-struct Log {
-   price: i64,
-   category: i64,
-   buy_date: NaiveDate
+
+pub struct Log {
+   pub price: i64,
+   pub category: i64,
+   pub buy_date: NaiveDate
 }
