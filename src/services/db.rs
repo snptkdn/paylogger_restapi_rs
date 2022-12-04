@@ -1,23 +1,23 @@
 use sqlx::mysql::MySqlPoolOptions;
 use sqlx::{Pool, MySql};
 use std::env;
+use dotenv;
 use std::sync::Arc;
+use anyhow::Result;
 
 #[derive(Clone)]
 pub struct Db(pub(crate) Arc<Pool<MySql>>);
 
 impl Db {
-    pub async fn new() -> Db {
+    pub async fn new() -> Result<Db> {
+        dotenv::dotenv().ok();
         let pool = MySqlPoolOptions::new()
             .max_connections(8)
             .connect(
-                &env::var("DATABASE_URL").unwrap_or_else(|_| panic!("DATABASE_URL must be set!")),
+                &env::var("DATABASE_URL")?
             )
-            .await
-            .unwrap_or_else(|_| {
-                panic!("Cannot connect to the database. Please check your configuration.")
-            });
+            .await?;
 
-        Db(Arc::new(pool))
+        Ok(Db(Arc::new(pool)))
     }
 }
