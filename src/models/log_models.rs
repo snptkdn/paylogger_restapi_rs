@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, sqlx::FromRow)]
 pub struct Log {
    pub price: i64,
    pub category: i64,

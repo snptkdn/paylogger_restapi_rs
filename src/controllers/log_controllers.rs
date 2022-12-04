@@ -8,10 +8,12 @@ use rocket::http::Status;
 use anyhow::Result;
 use futures::executor::block_on;
 
-
 #[get("/")]
-pub fn index() -> &'static str {
-    "Welcome to PAYLOGGER"
+pub fn index() -> Result<status::Accepted<Json<Vec<Log>>>, BadRequest<String>> {
+    match block_on(log_services::get()) {
+        Ok(logs) => Ok(status::Accepted(Some(Json(logs)))),
+        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+    }
 }
 
 #[post("/", data = "<log>")]
