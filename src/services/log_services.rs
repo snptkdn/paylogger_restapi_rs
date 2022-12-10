@@ -1,7 +1,7 @@
 use anyhow::Result;
 use sqlx::{query, query_as};
 use crate::services::db;
-use crate::models::log_models::{Log, TotalAmount};
+use crate::models::log_models::Log;
 
 pub async fn insert(log: Log) -> Result<()> {
     let db = db::Db::new().await?;
