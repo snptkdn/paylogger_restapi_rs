@@ -6,18 +6,26 @@ use rocket::response::status::{self, BadRequest};
 use anyhow::Result;
 use futures::executor::block_on;
 
-#[get("/")]
-pub fn index() -> Result<status::Accepted<Json<Vec<Category>>>, BadRequest<String>> {
-    match block_on(category_services::get()) {
-        Ok(logs) => Ok(status::Accepted(Some(Json(logs)))),
-        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+#[get("/?<name>")]
+pub fn get_category_id(name: Option<String>) -> Result<status::Accepted<Json<Vec<Category>>>, BadRequest<String>> {
+    if let Some(name) = name {
+        match block_on(category_services::get_cateogry_by_id(name)) {
+            Ok(category) => Ok(status::Accepted(Some(Json(vec!(category))))),
+            Err(e) => Err(status::BadRequest(Some(e.to_string())))
+        }
+    } else {
+        match block_on(category_services::get()) {
+            Ok(categories) => Ok(status::Accepted(Some(Json(categories)))),
+            Err(e) => Err(status::BadRequest(Some(e.to_string())))
+        }
     }
+    
 }
 
 #[post("/", data = "<category>")]
 pub fn post_new_category(category: Json<Category>) -> Result<status::Accepted<String>, BadRequest<String>> { 
     let category = Category {
-        id: category.id,
+        id: None,
         name: category.name.clone(),
     };
 

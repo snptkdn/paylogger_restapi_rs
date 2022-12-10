@@ -26,3 +26,16 @@ pub async fn get() -> Result<Vec<Category>> {
     
     Ok(categories)
 }
+
+pub async fn get_cateogry_by_id(name: String) -> Result<Category> {
+    let db = db::Db::new().await?;
+    let pool = db.0.clone();
+
+    let category = 
+        query_as::<_, Category>("select * from category where name=?")
+        .bind(name)
+        .fetch_one(&*pool)
+        .await?;
+    
+    Ok(category)
+}
