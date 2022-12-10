@@ -15,9 +15,9 @@ pub fn index() -> Result<status::Accepted<Json<Vec<Log>>>, BadRequest<String>> {
 }
 
 #[get("/this_month")]
-pub fn this_month() -> Result<status::Accepted<Json<i64>>, BadRequest<String>> {
+pub fn this_month() -> Result<status::Accepted<String>, BadRequest<String>> {
     match block_on(log_services::get_total_this_month()) {
-        Ok(total) => Ok(status::Accepted(Some(Json(total)))),
+        Ok(total) => Ok(status::Accepted(Some(total.to_string()))),
         Err(e) => Err(status::BadRequest(Some(e.to_string())))
     }
 }
