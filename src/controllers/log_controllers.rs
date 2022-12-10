@@ -14,6 +14,14 @@ pub fn index() -> Result<status::Accepted<Json<Vec<Log>>>, BadRequest<String>> {
     }
 }
 
+#[get("/this_month")]
+pub fn this_month() -> Result<status::Accepted<Json<i64>>, BadRequest<String>> {
+    match block_on(log_services::get_total_this_month()) {
+        Ok(total) => Ok(status::Accepted(Some(Json(total)))),
+        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+    }
+}
+
 #[post("/", data = "<log>")]
 pub fn post_new_log(log: Json<Log>) -> Result<status::Accepted<String>, BadRequest<String>> { 
     let log = Log {

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use sqlx::{query, query_as};
 use crate::services::db;
-use crate::models::log_models::Log;
+use crate::models::log_models::{Log, TotalAmount};
 
 pub async fn insert(log: Log) -> Result<()> {
     let db = db::Db::new().await?;
@@ -38,4 +38,20 @@ pub async fn get() -> Result<Vec<Log>> {
     }
 
     Ok(logs)
+}
+
+pub async fn get_total_this_month() -> Result<i64> {
+    let db = db::Db::new().await?;
+    let pool = db.0.clone();
+
+     let each_amount = query!("SELECT price FROM log WHERE DATE_FORMAT(buy_date, '%Y%m') = DATE_FORMAT(NOW(), '%Y%m') ")
+    .fetch_all(&*pool)
+    .await?;
+
+    let total_amount = each_amount
+        .iter()
+        .map(|record| record.price.unwrap() as i64)
+        .sum::<i64>();
+    
+    Ok(total_amount)
 }
