@@ -1,4 +1,5 @@
 use rocket;
+use std::collections::HashMap;
 use crate::models::log_models::Log;
 use crate::services::log_services;
 use rocket_contrib::json::Json;
@@ -18,6 +19,14 @@ pub fn index() -> Result<status::Accepted<Json<Vec<Log>>>, BadRequest<String>> {
 pub fn this_month() -> Result<status::Accepted<String>, BadRequest<String>> {
     match block_on(log_services::get_total_this_month()) {
         Ok(total) => Ok(status::Accepted(Some(total.to_string()))),
+        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+    }
+}
+
+#[get("/this_month/per_day")]
+pub fn this_month_per_day() -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
+    match block_on(log_services::get_price_per_date_this_month()) {
+        Ok(map) => Ok(status::Accepted(Some(Json(map)))),
         Err(e) => Err(status::BadRequest(Some(e.to_string())))
     }
 }
