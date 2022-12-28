@@ -13,6 +13,7 @@ fn main() {
         .mount("/log", routes![controllers::log_controllers::post_new_log])  // ここにルーティングをセットする
         .mount("/log", routes![controllers::log_controllers::this_month])  // ここにルーティングをセットする
         .mount("/log", routes![controllers::log_controllers::this_month_per_day])  // ここにルーティングをセットする
+        .mount("/log", routes![controllers::log_controllers::this_month_per_category])  // ここにルーティングをセットする
         .mount("/category", routes![controllers::category_controllers::get_category_id])  // ここにルーティングをセットする
         .mount("/category", routes![controllers::category_controllers::post_new_category])  // ここにルーティングをセットする
         .launch();

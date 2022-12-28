@@ -31,6 +31,14 @@ pub fn this_month_per_day() -> Result<status::Accepted<Json<HashMap<String, i64>
     }
 }
 
+#[get("/this_month/per_category")]
+pub fn this_month_per_category() -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
+    match block_on(log_services::get_price_per_category_this_month()) {
+        Ok(map) => Ok(status::Accepted(Some(Json(map)))),
+        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+    }
+}
+
 #[post("/", data = "<log>")]
 pub fn post_new_log(log: Json<Log>) -> Result<status::Accepted<String>, BadRequest<String>> { 
     let log = Log {
