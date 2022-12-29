@@ -23,6 +23,20 @@ pub fn this_month() -> Result<status::Accepted<String>, BadRequest<String>> {
     }
 }
 
+#[get("/month/per_category?<month>")]
+pub fn month_per_category(month: Option<String>) -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
+    let month = if let Some(month) = month {
+        month
+    } else {
+        "12".to_string()
+    };
+
+    match block_on(log_services::get_price_per_category_month(month)) {
+        Ok(each_category) => Ok(status::Accepted(Some(Json(each_category)))),
+        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+    }
+}
+
 #[get("/this_month/per_day")]
 pub fn this_month_per_day() -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
     match block_on(log_services::get_price_per_date_this_month()) {

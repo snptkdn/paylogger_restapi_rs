@@ -4,6 +4,8 @@ use anyhow::Result;
 use sqlx::{query, query_as};
 use crate::services::db;
 use crate::models::log_models::Log;
+use chrono::*;
+
 
 pub async fn insert(log: Log) -> Result<()> {
     let db = db::Db::new().await?;
@@ -104,6 +106,38 @@ pub async fn get_price_per_category_this_month() -> Result<HashMap<String, i64>>
      ")
     .fetch_all(&*pool)
     .await?;
+
+    let mut price_per_category = HashMap::<String, i64>::new();
+    for record in each_amount {
+        price_per_category
+            .entry(record.name.unwrap().to_string())
+            .and_modify(|price| *price += record.price.unwrap() as i64)
+            .or_insert(record.price.unwrap() as i64);
+    }
+
+    Ok(price_per_category)
+}
+
+pub async fn get_price_per_category_month(month: String) -> Result<HashMap<String, i64>> {
+    let db = db::Db::new().await?;
+    let pool = db.0.clone();
+    let today = Local::now().naive_local();
+
+    let each_amount = query!("
+        SELECT 
+            *
+        FROM 
+            log 
+        INNER JOIN
+            category 
+        ON 
+            log.category = category.id
+        WHERE
+            DATE_FORMAT(buy_date, '%Y%m') = ?;
+     ", format!("{}{}", today.year(), month))
+    .fetch_all(&*pool)
+    .await?;
+    println!("{}{}", today.year(), month);
 
     let mut price_per_category = HashMap::<String, i64>::new();
     for record in each_amount {
