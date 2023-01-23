@@ -207,8 +207,8 @@ fn get_date_string(
     day: Option<usize>
 ) -> Result<String> {
     match (year, month, day) {
-        (Some(year), Some(month), Some(day)) => Ok(format!("{}{}{}", year, month, day)),
-        (Some(year), Some(month), None     ) => Ok(format!("{}{}", year, month)),
+        (Some(year), Some(month), Some(day)) => Ok(format!("{}{:>02}{:>02}", year, month, day)),
+        (Some(year), Some(month), None     ) => Ok(format!("{}{:>02}", year, month)),
         (Some(year), None       , None     ) => Ok(format!("{}", year)),
         _ => Err(anyhow!("Query string of date is invalid!"))
     }
