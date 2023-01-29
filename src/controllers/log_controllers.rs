@@ -2,40 +2,15 @@ use rocket;
 use std::collections::HashMap;
 use crate::models::log_models::Log;
 use crate::services::log_services;
-use crate::services::validation_services;
 use crate::services::validation_services::is_valid_date;
 use rocket_contrib::json::Json;
 use rocket::response::status::{self, BadRequest};
-use anyhow::{Result, anyhow};
 use futures::executor::block_on;
 
 #[get("/")]
 pub fn index() -> Result<status::Accepted<Json<Vec<Log>>>, BadRequest<String>> {
     match block_on(log_services::get()) {
         Ok(logs) => Ok(status::Accepted(Some(Json(logs)))),
-        Err(e) => Err(status::BadRequest(Some(e.to_string())))
-    }
-}
-
-#[get("/this_month")]
-pub fn this_month() -> Result<status::Accepted<String>, BadRequest<String>> {
-    match block_on(log_services::get_total_this_month()) {
-        Ok(total) => Ok(status::Accepted(Some(total.to_string()))),
-        Err(e) => Err(status::BadRequest(Some(e.to_string())))
-    }
-}
-
-
-#[get("/month/per_category?<month>")]
-pub fn month_per_category(month: Option<String>) -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
-    let month = if let Some(month) = month {
-        month
-    } else {
-        "12".to_string()
-    };
-
-    match block_on(log_services::get_price_per_category_month(month)) {
-        Ok(each_category) => Ok(status::Accepted(Some(Json(each_category)))),
         Err(e) => Err(status::BadRequest(Some(e.to_string())))
     }
 }
@@ -84,22 +59,6 @@ pub fn total(
 
     match block_on(log_services::get_total(year, month, day)) {
         Ok(total_amount) => Ok(status::Accepted(Some(total_amount.to_string()))),
-        Err(e) => Err(status::BadRequest(Some(e.to_string())))
-    }
-}
-
-#[get("/this_month/per_day")]
-pub fn this_month_per_day() -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
-    match block_on(log_services::get_price_per_date_this_month()) {
-        Ok(map) => Ok(status::Accepted(Some(Json(map)))),
-        Err(e) => Err(status::BadRequest(Some(e.to_string())))
-    }
-}
-
-#[get("/this_month/per_category")]
-pub fn this_month_per_category() -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
-    match block_on(log_services::get_price_per_category_this_month()) {
-        Ok(map) => Ok(status::Accepted(Some(Json(map)))),
         Err(e) => Err(status::BadRequest(Some(e.to_string())))
     }
 }

@@ -43,22 +43,6 @@ pub async fn get() -> Result<Vec<Log>> {
     Ok(logs)
 }
 
-pub async fn get_total_this_month() -> Result<i64> {
-    let db = db::Db::new().await?;
-    let pool = db.0.clone();
-
-     let each_amount = query!("SELECT price FROM log WHERE DATE_FORMAT(buy_date, '%Y%m') = DATE_FORMAT(NOW(), '%Y%m') ")
-    .fetch_all(&*pool)
-    .await?;
-
-    let total_amount = each_amount
-        .iter()
-        .map(|record| record.price.unwrap() as i64)
-        .sum::<i64>();
-    
-    Ok(total_amount)
-}
-
 pub async fn get_total(
     year: Option<usize>,
     month: Option<usize>,
@@ -88,34 +72,6 @@ pub async fn get_total(
         .sum::<i64>();
     
     Ok(total_amount)
-}
-
-pub async fn get_price_per_date_this_month() -> Result<HashMap<String, i64>> {
-    let db = db::Db::new().await?;
-    let pool = db.0.clone();
-
-     let each_amount = query!("
-        SELECT 
-            buy_date, price
-        FROM 
-            log 
-        WHERE
-            DATE_FORMAT(buy_date, '%Y%m') = DATE_FORMAT(NOW(), '%Y%m')
-        ORDER BY
-            buy_date ASC;
-     ")
-    .fetch_all(&*pool)
-    .await?;
-
-    let mut price_per_day = HashMap::<String, i64>::new();
-    for record in each_amount {
-        price_per_day
-            .entry(record.buy_date.unwrap().to_string())
-            .and_modify(|price| *price += record.price.unwrap() as i64)
-            .or_insert(record.price.unwrap() as i64);
-    }
-
-    Ok(price_per_day)
 }
 
 pub async fn get_price_per_day(
@@ -150,68 +106,6 @@ pub async fn get_price_per_day(
     }
 
     Ok(price_per_day)
-}
-
-pub async fn get_price_per_category_this_month() -> Result<HashMap<String, i64>> {
-    let db = db::Db::new().await?;
-    let pool = db.0.clone();
-
-     let each_amount = query!("
-        SELECT 
-            *
-        FROM 
-            log 
-        INNER JOIN
-            category 
-        ON 
-            log.category = category.id
-        WHERE
-            DATE_FORMAT(buy_date, '%Y%m') = DATE_FORMAT(NOW(), '%Y%m');
-     ")
-    .fetch_all(&*pool)
-    .await?;
-
-    let mut price_per_category = HashMap::<String, i64>::new();
-    for record in each_amount {
-        price_per_category
-            .entry(record.name.unwrap().to_string())
-            .and_modify(|price| *price += record.price.unwrap() as i64)
-            .or_insert(record.price.unwrap() as i64);
-    }
-
-    Ok(price_per_category)
-}
-
-pub async fn get_price_per_category_month(month: String) -> Result<HashMap<String, i64>> {
-    let db = db::Db::new().await?;
-    let pool = db.0.clone();
-    let today = Local::now().naive_local();
-
-    let each_amount = query!("
-        SELECT 
-            *
-        FROM 
-            log 
-        INNER JOIN
-            category 
-        ON 
-            log.category = category.id
-        WHERE
-            DATE_FORMAT(buy_date, '%Y%m') = ?;
-     ", format!("{}{}", today.year(), month))
-    .fetch_all(&*pool)
-    .await?;
-    println!("{}{}", today.year(), month);
-
-    let mut price_per_category = HashMap::<String, i64>::new();
-    for record in each_amount {
-        price_per_category
-            .entry(record.name.unwrap().to_string())
-            .and_modify(|price| *price += record.price.unwrap() as i64)
-            .or_insert(record.price.unwrap() as i64);
-    }
-
-    Ok(price_per_category)
 }
 
 pub async fn get_price_per_category(
