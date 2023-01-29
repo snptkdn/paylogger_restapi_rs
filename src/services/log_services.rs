@@ -59,6 +59,37 @@ pub async fn get_total_this_month() -> Result<i64> {
     Ok(total_amount)
 }
 
+pub async fn get_total(
+    year: Option<usize>,
+    month: Option<usize>,
+    day: Option<usize>
+) -> Result<i64> {
+    let db = db::Db::new().await?;
+    let pool = db.0.clone();
+
+     let each_amount = query!(
+        "
+           SELECT 
+               price 
+           FROM 
+               log 
+           WHERE 
+               DATE_FORMAT(buy_date, ?) = ?
+        ",
+        get_date_format(year, month, day)?,
+        get_date_string(year, month, day)?
+    )
+    .fetch_all(&*pool)
+    .await?;
+
+    let total_amount = each_amount
+        .iter()
+        .map(|record| record.price.unwrap() as i64)
+        .sum::<i64>();
+    
+    Ok(total_amount)
+}
+
 pub async fn get_price_per_date_this_month() -> Result<HashMap<String, i64>> {
     let db = db::Db::new().await?;
     let pool = db.0.clone();

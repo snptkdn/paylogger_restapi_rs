@@ -72,6 +72,22 @@ pub fn per_category(
     }
 }
 
+#[get("/total?<year>&<month>&<day>")]
+pub fn total(
+    year: Option<usize>,
+    month: Option<usize>,
+    day: Option<usize>
+) -> Result<status::Accepted<String>, BadRequest<String>> {
+    if !is_valid_date(year, month, day) {
+        return Err(status::BadRequest(Some("invalid date!".to_string())));
+    };
+
+    match block_on(log_services::get_total(year, month, day)) {
+        Ok(total_amount) => Ok(status::Accepted(Some(total_amount.to_string()))),
+        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+    }
+}
+
 #[get("/this_month/per_day")]
 pub fn this_month_per_day() -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
     match block_on(log_services::get_price_per_date_this_month()) {
