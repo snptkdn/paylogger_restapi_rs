@@ -87,6 +87,40 @@ pub async fn get_price_per_date_this_month() -> Result<HashMap<String, i64>> {
     Ok(price_per_day)
 }
 
+pub async fn get_price_per_day(
+    year: Option<usize>,
+    month: Option<usize>,
+    day: Option<usize>
+) -> Result<HashMap<String, i64>> {
+    let db = db::Db::new().await?;
+    let pool = db.0.clone();
+
+     let each_amount = query!("
+        SELECT 
+            buy_date, price
+        FROM 
+            log 
+        WHERE
+            DATE_FORMAT(buy_date, ?) = ?
+        ORDER BY
+            buy_date ASC;
+     ",
+     get_date_format(year, month, day)?,
+     get_date_string(year, month, day)?)
+    .fetch_all(&*pool)
+    .await?;
+
+    let mut price_per_day = HashMap::<String, i64>::new();
+    for record in each_amount {
+        price_per_day
+            .entry(record.buy_date.unwrap().to_string())
+            .and_modify(|price| *price += record.price.unwrap() as i64)
+            .or_insert(record.price.unwrap() as i64);
+    }
+
+    Ok(price_per_day)
+}
+
 pub async fn get_price_per_category_this_month() -> Result<HashMap<String, i64>> {
     let db = db::Db::new().await?;
     let pool = db.0.clone();

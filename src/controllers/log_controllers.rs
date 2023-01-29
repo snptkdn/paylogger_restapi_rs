@@ -40,6 +40,22 @@ pub fn month_per_category(month: Option<String>) -> Result<status::Accepted<Json
     }
 }
 
+#[get("/per_day?<year>&<month>&<day>")]
+pub fn per_day(
+    year: Option<usize>,
+    month: Option<usize>,
+    day: Option<usize>
+) -> Result<status::Accepted<Json<HashMap<String, i64>>>, BadRequest<String>> {
+    if !is_valid_date(year, month, day) {
+        return Err(status::BadRequest(Some("invalid date!".to_string())));
+    };
+
+    match block_on(log_services::get_price_per_day(year, month, day)) {
+        Ok(each_category) => Ok(status::Accepted(Some(Json(each_category)))),
+        Err(e) => Err(status::BadRequest(Some(e.to_string())))
+    }
+}
+
 #[get("/per_category?<year>&<month>&<day>")]
 pub fn per_category(
     year: Option<usize>,

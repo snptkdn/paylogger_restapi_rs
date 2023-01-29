@@ -16,6 +16,7 @@ fn main() {
         .mount("/log", routes![controllers::log_controllers::this_month_per_category])
         .mount("/log", routes![controllers::log_controllers::month_per_category])
         .mount("/log", routes![controllers::log_controllers::per_category])
+        .mount("/log", routes![controllers::log_controllers::per_day])
         .mount("/category", routes![controllers::category_controllers::get_category_id]) 
         .mount("/category", routes![controllers::category_controllers::post_new_category])
         .launch();
