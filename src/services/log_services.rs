@@ -156,6 +156,7 @@ fn get_date_format(
         (Some(_), Some(_), Some(_)) => Ok("%Y%m%d".to_string()),
         (Some(_), Some(_), None   ) => Ok("%Y%m".to_string()),
         (Some(_), None   , None    )=> Ok("%Y".to_string()),
+        (None   , None   , None    )=> Ok("EVERY".to_string()),
         _ => Err(anyhow!("Query string of date is invalid!"))
     }
 }
@@ -169,6 +170,7 @@ fn get_date_string(
         (Some(year), Some(month), Some(day)) => Ok(format!("{}{:>02}{:>02}", year, month, day)),
         (Some(year), Some(month), None     ) => Ok(format!("{}{:>02}", year, month)),
         (Some(year), None       , None     ) => Ok(format!("{}", year)),
+        (None      , None       , None     ) => Ok("EVERY".to_string()),
         _ => Err(anyhow!("Query string of date is invalid!"))
     }
 }
