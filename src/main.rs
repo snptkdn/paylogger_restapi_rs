@@ -38,5 +38,7 @@ fn main() {
         .mount("/log", routes![controllers::log_controllers::total])
         .mount("/category", routes![controllers::category_controllers::get_category_id]) 
         .mount("/category", routes![controllers::category_controllers::post_new_category])
+        .mount("/auth", routes![controllers::auth_controllers::login])
+        .mount("/auth", routes![controllers::auth_controllers::login_callback])
         .launch();
 }
