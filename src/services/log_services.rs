@@ -1,10 +1,9 @@
-use std::collections::HashMap;
-use anyhow::{Result, anyhow};
-use sqlx::{query, query_as};
-use crate::services::db;
 use crate::models::log_models::Log;
+use crate::services::db;
+use anyhow::{anyhow, Result};
 use chrono::*;
-
+use sqlx::{query, query_as};
+use std::collections::HashMap;
 
 pub async fn insert(log: Log) -> Result<()> {
     let db = db::Db::new().await?;
@@ -25,10 +24,8 @@ pub async fn get() -> Result<Vec<Log>> {
     let pool = db.0.clone();
 
     //let logs = query_as::<_, Log>(query)
-    let records = query!("select * from log")
-        .fetch_all(&*pool)
-        .await?;
-    
+    let records = query!("select * from log").fetch_all(&*pool).await?;
+
     let mut logs = Vec::new();
     for record in records {
         let log = Log {
@@ -46,12 +43,12 @@ pub async fn get() -> Result<Vec<Log>> {
 pub async fn get_total(
     year: Option<usize>,
     month: Option<usize>,
-    day: Option<usize>
+    day: Option<usize>,
 ) -> Result<i64> {
     let db = db::Db::new().await?;
     let pool = db.0.clone();
 
-     let each_amount = query!(
+    let each_amount = query!(
         "
            SELECT 
                price 
@@ -70,19 +67,20 @@ pub async fn get_total(
         .iter()
         .map(|record| record.price.unwrap() as i64)
         .sum::<i64>();
-    
+
     Ok(total_amount)
 }
 
 pub async fn get_price_per_day(
     year: Option<usize>,
     month: Option<usize>,
-    day: Option<usize>
+    day: Option<usize>,
 ) -> Result<HashMap<String, i64>> {
     let db = db::Db::new().await?;
     let pool = db.0.clone();
 
-     let each_amount = query!("
+    let each_amount = query!(
+        "
         SELECT 
             buy_date, price
         FROM 
@@ -92,8 +90,9 @@ pub async fn get_price_per_day(
         ORDER BY
             buy_date ASC;
      ",
-     get_date_format(year, month, day)?,
-     get_date_string(year, month, day)?)
+        get_date_format(year, month, day)?,
+        get_date_string(year, month, day)?
+    )
     .fetch_all(&*pool)
     .await?;
 
@@ -111,13 +110,12 @@ pub async fn get_price_per_day(
 pub async fn get_price_per_category(
     year: Option<usize>,
     month: Option<usize>,
-    day: Option<usize>
+    day: Option<usize>,
 ) -> Result<HashMap<String, i64>> {
     let db = db::Db::new().await?;
     let pool = db.0.clone();
 
-    let each_amount = query!
-    (
+    let each_amount = query!(
         "
         SELECT 
             *
@@ -129,9 +127,9 @@ pub async fn get_price_per_category(
             log.category = category.id
         WHERE
             DATE_FORMAT(buy_date, ?) = ?;
-         ", 
-         get_date_format(year, month, day)?,
-         get_date_string(year, month, day)?,
+         ",
+        get_date_format(year, month, day)?,
+        get_date_string(year, month, day)?,
     )
     .fetch_all(&*pool)
     .await?;
@@ -150,27 +148,27 @@ pub async fn get_price_per_category(
 fn get_date_format(
     year: Option<usize>,
     month: Option<usize>,
-    day: Option<usize>
+    day: Option<usize>,
 ) -> Result<String> {
     match (year, month, day) {
         (Some(_), Some(_), Some(_)) => Ok("%Y%m%d".to_string()),
-        (Some(_), Some(_), None   ) => Ok("%Y%m".to_string()),
-        (Some(_), None   , None    )=> Ok("%Y".to_string()),
-        (None   , None   , None    )=> Ok("EVERY".to_string()),
-        _ => Err(anyhow!("Query string of date is invalid!"))
+        (Some(_), Some(_), None) => Ok("%Y%m".to_string()),
+        (Some(_), None, None) => Ok("%Y".to_string()),
+        (None, None, None) => Ok("EVERY".to_string()),
+        _ => Err(anyhow!("Query string of date is invalid!")),
     }
 }
 
 fn get_date_string(
     year: Option<usize>,
     month: Option<usize>,
-    day: Option<usize>
+    day: Option<usize>,
 ) -> Result<String> {
     match (year, month, day) {
         (Some(year), Some(month), Some(day)) => Ok(format!("{}{:>02}{:>02}", year, month, day)),
-        (Some(year), Some(month), None     ) => Ok(format!("{}{:>02}", year, month)),
-        (Some(year), None       , None     ) => Ok(format!("{}", year)),
-        (None      , None       , None     ) => Ok("EVERY".to_string()),
-        _ => Err(anyhow!("Query string of date is invalid!"))
+        (Some(year), Some(month), None) => Ok(format!("{}{:>02}", year, month)),
+        (Some(year), None, None) => Ok(format!("{}", year)),
+        (None, None, None) => Ok("EVERY".to_string()),
+        _ => Err(anyhow!("Query string of date is invalid!")),
     }
 }

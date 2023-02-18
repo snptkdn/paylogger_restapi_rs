@@ -1,8 +1,9 @@
+use crate::services::auth_services::get_auth;
+use dotenv::dotenv;
+use futures::executor::block_on;
+use rocket::response::status::{self, BadRequest};
 use rocket::response::Redirect;
 use rocket_contrib::json::Json;
-use rocket::response::status::{self, BadRequest};
-use futures::executor::block_on;
-use dotenv::dotenv;
 use std::env;
 
 #[get("/login")]
@@ -12,6 +13,9 @@ pub fn login() -> Redirect {
 }
 
 #[get("/login/callback?<code>")]
-pub fn login_callback(code: String) -> String {
-    code
+pub async fn login_callback(code: String) -> String {
+    match get_auth(&code).await {
+        Ok(res) => res,
+        Err(e) => e.to_string(),
+    }
 }

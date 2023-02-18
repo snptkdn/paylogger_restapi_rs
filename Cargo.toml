@@ -10,10 +10,11 @@ chrono = "*"
 sqlx = { version = "0.5.10", features = [ "mysql", "runtime-async-std-native-tls", "time" ] }
 dotenv = "*"
 anyhow = "*"
-rocket = "0.4"
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_contrib = { version = "0.4", features = ["json"] }
 serde = { version = "^1.0.101", features = ["derive"] }
 serde_json = "^1.0.41"
 futures = "0.3"
-rocket_cors = "*"
-
+rocket_cors = "0.5.0"
+reqwest = { version = "0.11.14", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
