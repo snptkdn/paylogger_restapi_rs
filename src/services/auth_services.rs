@@ -1,11 +1,27 @@
 use anyhow::Result;
 use dotenv::dotenv;
 use reqwest;
-use serde_json::json;
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::env;
 
-pub async fn get_auth(code: &str) -> Result<String> {
+#[derive(Deserialize)]
+struct OAuthResponse {
+    access_token: String,
+}
+
+#[derive(Deserialize)]
+pub struct MeInfo {
+    pub user: DiscordUser,
+}
+
+#[derive(Deserialize)]
+struct DiscordUser {
+    pub user_name: String,
+    pub id: String,
+}
+
+pub async fn get_access_token(code: &str) -> Result<String> {
     dotenv().ok();
     let mut params = HashMap::new();
     params.insert("client_id", env::var("DISCORD_CLIENT_ID")?);
@@ -21,7 +37,22 @@ pub async fn get_auth(code: &str) -> Result<String> {
         .header("Content-Type", "application/x-www-form-urlencoded")
         .send()
         .await?
-        .text()
+        .json::<OAuthResponse>()
+        .await?;
+
+    Ok(res.access_token)
+}
+
+pub async fn get_me_info(token: &str) -> Result<MeInfo> {
+    dotenv().ok();
+
+    let client = reqwest::Client::new();
+    let res = client
+        .get(env::var("DISCORD_ME_URL")?)
+        .bearer_auth(token)
+        .send()
+        .await?
+        .json::<MeInfo>()
         .await?;
 
     Ok(res)

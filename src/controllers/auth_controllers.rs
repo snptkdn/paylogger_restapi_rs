@@ -1,7 +1,7 @@
-use crate::services::auth_services::get_auth;
+use crate::services::auth_services::{get_access_token, get_me_info};
 use dotenv::dotenv;
 use futures::executor::block_on;
-use rocket::response::status::{self, BadRequest};
+use rocket::response::status::{Accepted, BadRequest};
 use rocket::response::Redirect;
 use rocket_contrib::json::Json;
 use std::env;
@@ -13,9 +13,8 @@ pub fn login() -> Redirect {
 }
 
 #[get("/login/callback?<code>")]
-pub async fn login_callback(code: String) -> String {
-    match get_auth(&code).await {
-        Ok(res) => res,
-        Err(e) => e.to_string(),
-    }
+pub async fn login_callback(code: String) -> Result<Accepted<String>, BadRequest<String>> {
+    let token = get_access_token(&code).await.expect("Error");
+    let me_info = get_me_info(&token).await.expect("Error");
+    Ok(Accepted(Some(me_info.user.id)))
 }
