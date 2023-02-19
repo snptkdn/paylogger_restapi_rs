@@ -16,7 +16,7 @@ pub struct MeInfo {
 }
 
 #[derive(Deserialize)]
-struct DiscordUser {
+pub struct DiscordUser {
     pub user_name: String,
     pub id: String,
 }
