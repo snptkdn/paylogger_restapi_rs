@@ -3,7 +3,14 @@
 FROM rustlang/rust:nightly-buster-slim
 
 # Copy local code to the container image.
-WORKDIR /
+RUN USER=root cargo new --bin app
+WORKDIR /app
+
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+RUN cargo build --release
+RUN rm src/*.rs
+
 COPY . .
 ENV DATABASE_URL 
 
@@ -19,4 +26,4 @@ RUN cargo build --release
 ENV PORT 8080
 
 # Run the web service on container startup.
-ENTRYPOINT ["target/release/paylogger"]
+ENTRYPOINT ["target/release/paiylogger"]
